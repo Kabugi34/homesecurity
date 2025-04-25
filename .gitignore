@@ -1,0 +1,60 @@
+#Python / FastAPI
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.log
+*.sqlite3
+*.db
+.env
+.env.*
+.DS_Store
+instance/
+venv/
+env/
+ENV/
+*.pkl
+
+# FastAPI development tools
+.idea/
+.vscode/
+*.swp
+
+# 💻 Virtual environment
+.venv/
+venv/
+env/
+ENV/
+benv/
+
+
+# 🚀 Node / React
+node_modules/
+build/
+dist/
+.npm/
+.npmrc
+.yarn/
+yarn.lock
+package-lock.json
+coverage/
+*.env.local
+*.env.development
+*.env.production
+*.env.test
+
+# React cache files
+.cache/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Testing and artifacts
+*.pytest_cache/
+__snapshots__/
+
+# Optional: ignore model weights if you store them locally
+*.h5
+*.pt
+*.onnx
