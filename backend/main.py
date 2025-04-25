@@ -1,46 +1,61 @@
 # main.py
-
-from fastapi import FastAPI
-from fastapi.responses import JSONResponse
-import cv2
-import pickle
+from fastapi import FastAPI, UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
-from utils.face_utils import get_face_embedding
+import cv2
+from backend.utils.face_utils import load_facenet_model, recognize_face, save_embeddings, get_embedding
+import os
+import pickle
+
+def load_embeddings():
+    """Load embeddings and labels from a file."""
+    if os.path.exists("embeddings.pkl"):
+        with open("embeddings.pkl", "rb") as f:
+            data = pickle.load(f)
+        return data["embeddings"], data["labels"]
+    else:
+        raise FileNotFoundError("Embeddings file not found.")
 
 app = FastAPI()
+model_path = "backend/models/facenet_keras (2).h5"
+model = load_facenet_model(model_path)
 
-# Load models
-with open("models/svc_model.pkl", "rb") as f:
-    clf = pickle.load(f)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Adjust this when connecting frontend
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-with open("models/label_encoder.pkl", "rb") as f:
-    label_encoder = pickle.load(f)
+model = load_facenet_model()
 
-@app.get("/recognize")
-def recognize_face():
-    cap = cv2.VideoCapture(0)
-    ret, frame = cap.read()
-    cap.release()
+@app.post("/train/")
+async def train_faces(person_name: str, files: list[UploadFile] = File(...)):
+    embeddings = []
+    for file in files:
+        img_data = await file.read()
+        nparr = np.frombuffer(img_data, np.uint8)
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        embedding = get_embedding(model, img)
+        embeddings.append(embedding)
 
-    if not ret:
-        return JSONResponse(status_code=500, content={"message": "Failed to capture frame."})
+    try:
+        existing_embeddings, labels = load_embeddings()
+        existing_embeddings += embeddings
+        labels += [person_name] * len(embeddings)
+    except FileNotFoundError:
+        existing_embeddings, labels = embeddings, [person_name] * len(embeddings)
 
-    bbox, embedding = get_face_embedding(frame)
+    save_embeddings(existing_embeddings, labels)
+    return {"message": f"Trained {len(embeddings)} face(s) for {person_name}"}
 
-    if embedding is None:
-        return {"message": "No face detected."}
 
-    # Predict
-    probs = clf.predict_proba([embedding])[0]
-    pred_index = np.argmax(probs)
-    confidence = round(probs[pred_index] * 100, 2)
-    predicted_name = label_encoder.inverse_transform([pred_index])[0]
+@app.post("/recognize/")
+async def recognize(file: UploadFile = File(...)):
+    img_data = await file.read()
+    nparr = np.frombuffer(img_data, np.uint8)
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
-    if confidence < 70:
-        return {"message": "Intruder Detected", "confidence": confidence}
-
-    return {
-        "message": f"{predicted_name} identified",
-        "confidence": confidence,
-        "bounding_box": bbox.tolist()
-    }
+    name, confidence = recognize_face(model, img)
+    return {"name": name, "confidence": round(confidence * 100, 2)}
