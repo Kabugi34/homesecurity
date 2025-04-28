@@ -1,16 +1,38 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import JSONResponse
 import shutil
 import os
 from backend.utils.face_utils import train_faces, recognize_face
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"], #allow request from frontend
+    allow_credentials=True,
+    allow_methods=["*"], 
+    allow_headers=["*"],  
+)
 
 TEMP_IMAGE_PATH = os.path.join(os.path.dirname(__file__), "temp_image.jpg")
 
 @app.get("/")
 def root():
     return {"message": "Face Recognition API is working. Go to /docs for Swagger UI."}
+
+dataset_path = os.path.join(os.path.dirname(__file__), "known_people")
+
+@app.post("add_person")
+async def add_person(name: str = Form(...), images: list[UploadFile] = File(...)):
+    person_dir =os.path.join(dataset_path, name)
+    for image in images:
+        image_path=os.path.join(person_dir, image.filename)
+        with open(image_path, "wb") as buffer:
+            shutil.copyfileobj(image.file, buffer)
+    return {"message":f"succesfully added {name} with {len(images)} images."}
+    
+    
 
 @app.post("/train/")
 def train_known_faces():

@@ -14,12 +14,12 @@ const AddPerson =() =>{
     }
     const formData =new FormData();
     formData.append('name',name);
-    for (const image of images) {
-      formData.append('images', image);
+    for (let i = 0; i < images.length; i++) {
+      formData.append("images", images[i]);
     }
     try {
       setUploading(true);
-      const response =await axios.post('http:localhost:8000/add_person',formData,{
+      const response =await axios.post('http://localhost:8000/add_person',formData,{
         headers: {
           'Content-Type': 'multipart/form-data',
         },
