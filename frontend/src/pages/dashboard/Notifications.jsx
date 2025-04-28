@@ -1,11 +1,10 @@
-function Notifications() {
-    return (
-      <div>
-        <h1 className="text-3xl font-bold mb-4">Notifications</h1>
-        <p>Configure intruder alerts and email notifications here.</p>
-      </div>
-    );
-  }
-  
-  export default Notifications;
-  
+const Notifications = () => {
+  return (
+    <div className="text-2xl font-semibold text-gray-800">
+      🔔 Notifications
+      <p className="text-base mt-2 text-gray-600">View alerts and images of intruder detections sent to email.</p>
+    </div>
+  );
+};
+
+export default Notifications;

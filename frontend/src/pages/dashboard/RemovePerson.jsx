@@ -1,11 +1,10 @@
-function RemovePerson() {
-    return (
-      <div>
-        <h1 className="text-3xl font-bold mb-4">Remove Person</h1>
-        <p>Remove a known person and retrain the model.</p>
-      </div>
-    );
-  }
-  
-  export default RemovePerson;
-  
+const RemovePerson = () => {
+  return (
+    <div className="text-2xl font-semibold text-gray-800">
+      🗑️ Remove Person
+      <p className="text-base mt-2 text-gray-600">Select and remove a known person and retrain model.</p>
+    </div>
+  );
+};
+
+export default RemovePerson;

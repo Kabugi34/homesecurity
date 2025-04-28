@@ -1,4 +1,4 @@
-import { BrowserRouter , Routes, Route} from "react-router-dom";
+import { BrowserRouter as Router  , Routes, Route} from "react-router-dom";
 import Landing from "./pages/Landing";  
 import Register from "./pages/Register";
 import Login from "./pages/Login";
@@ -17,7 +17,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route element={<PrivateRoute />}>
-          <Route path="/dashboard" element={<Dashboard />}>
+          <Route path="/dashboard/*" element={<Dashboard />}>
             <Route path="activity" element={<Activity />} />
             <Route path="livefeed" element={<LiveFeed />} />
             <Route path="addperson" element={<AddPerson />} />
