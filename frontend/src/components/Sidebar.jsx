@@ -10,6 +10,7 @@ const Sidebar = () => {
         <Link to="/dashboard/addperson" className="hover:text-blue-600">Add Person</Link>
         <Link to="/dashboard/removeperson" className="hover:text-blue-600">Remove Person</Link>
         <Link to="/dashboard/notifications" className="hover:text-blue-600">Notifications</Link>
+        <link to ="/dashboard/Recognize" className="hover:text-blue-600">Recognize people from file uploads</link>
       </nav>
     </div>
   );
