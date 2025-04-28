@@ -2,15 +2,15 @@ import { Link } from 'react-router-dom';
 
 const Sidebar = () => {
   return (
-    <div className="w-64 bg-white shadow-lg min-h-screen">
-      <h2 className="text-2xl font-bold p-4 border-b">Dashboard</h2>
-      <nav className="flex flex-col p-4 space-y-4">
-        <Link to="/dashboard/activity" className="hover:text-blue-600">Activity</Link>
-        <Link to="/dashboard/livefeed" className="hover:text-blue-600">Live Feed</Link>
-        <Link to="/dashboard/addperson" className="hover:text-blue-600">Add Person</Link>
-        <Link to="/dashboard/removeperson" className="hover:text-blue-600">Remove Person</Link>
-        <Link to="/dashboard/notifications" className="hover:text-blue-600">Notifications</Link>
-        <link to ="/dashboard/Recognize" className="hover:text-blue-600">Recognize people from file uploads</link>
+    <div className="w-64 bg-gradient-to-r from-teal-400 via-blue-500 to-indigo-500 text-white shadow-xl min-h-screen">
+      <h2 className="text-3xl font-bold p-6 border-b border-gray-300 text-center">Dashboard</h2>
+      <nav className="flex flex-col p-6 space-y-6">
+        <Link to="/dashboard/activity" className="hover:text-blue-300 transition-colors duration-200">Activity</Link>
+        <Link to="/dashboard/livefeed" className="hover:text-blue-300 transition-colors duration-200">Live Feed</Link>
+        <Link to="/dashboard/addperson" className="hover:text-blue-300 transition-colors duration-200">Add Person</Link>
+        <Link to="/dashboard/removeperson" className="hover:text-blue-300 transition-colors duration-200">Remove Person</Link>
+        <Link to="/dashboard/notifications" className="hover:text-blue-300 transition-colors duration-200">Notifications</Link>
+        <Link to="/dashboard/Recognize" className="hover:text-blue-300 transition-colors duration-200">Recognize people from file uploads</Link>
       </nav>
     </div>
   );
