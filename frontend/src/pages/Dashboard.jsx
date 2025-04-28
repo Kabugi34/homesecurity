@@ -5,6 +5,7 @@ import LiveFeed from './dashboard/LiveFeed';
 import AddPerson from './dashboard/AddPerson';
 import RemovePerson from './dashboard/RemovePerson';
 import Notifications from './dashboard/Notifications';
+import Recognize from './dashboard/Recognize';
 
 const Dashboard = () => {
   return (
@@ -18,6 +19,7 @@ const Dashboard = () => {
           <Route path="/addperson" element={<AddPerson />} />
           <Route path="/removeperson" element={<RemovePerson />} />
           <Route path="/notifications" element={<Notifications />} />
+          <Route path="/recognize" element={<Recognize />} />
         </Routes>
       </div>
     </div>
