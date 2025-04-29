@@ -7,6 +7,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
+#configuring CORS middleware to allow requests from the frontend
+# This is important for local development when the frontend and backend are on different ports.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173"], #allow request from frontend

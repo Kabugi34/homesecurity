@@ -1,5 +1,7 @@
 import React ,{useState} from 'react';
 import axios from 'axios';
+import imageCompression from 'browser-image-compression';
+
 const AddPerson =() =>{
   const [name,setName] =useState('');
   const[images ,setImages] =useState([]);
@@ -15,7 +17,12 @@ const AddPerson =() =>{
     const formData =new FormData();
     formData.append('name',name);
     for (let i = 0; i < images.length; i++) {
-      formData.append("images", images[i]);
+      const compressedFile=await imageCompression(images[i],{
+        maxSizeMB: 1,
+        maxWidthOrHeight: 800,
+        useWebWorker: true,
+      });
+      formData.append("images", compressedFile, compressedFile.name);
     }
     try {
       setUploading(true);
