@@ -29,6 +29,7 @@ dataset_path = os.path.join(os.path.dirname(__file__), "known_people")
 async def add_person(name: str = Form(...), details: str = Form(None), images: list[UploadFile] = File(...)):
     base_dir ="C:/project fourth year/known people"
     person_dir =os.path.join(base_dir, name)
+    os.makedirs(person_dir, exist_ok=True)
     for image in images:
         image_path=os.path.join(person_dir, image.filename)
         with open(image_path, "wb") as buffer:
