@@ -1,6 +1,6 @@
 import React ,{useState} from 'react';
 import axios from 'axios';
-import imageCompression from 'browser-image-compression';
+import imageCompression from 'browser-image-compression'; // Import the image compression library
 
 const AddPerson =() =>{
   const [name,setName] =useState('');

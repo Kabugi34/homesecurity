@@ -25,9 +25,10 @@ def root():
 
 dataset_path = os.path.join(os.path.dirname(__file__), "known_people")
 
-@app.post("add_person")
-async def add_person(name: str = Form(...), images: list[UploadFile] = File(...)):
-    person_dir =os.path.join(dataset_path, name)
+@app.post("/add_person")
+async def add_person(name: str = Form(...), details: str = Form(None), images: list[UploadFile] = File(...)):
+    base_dir ="C:/project fourth year/known people"
+    person_dir =os.path.join(base_dir, name)
     for image in images:
         image_path=os.path.join(person_dir, image.filename)
         with open(image_path, "wb") as buffer:
