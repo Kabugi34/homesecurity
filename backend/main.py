@@ -2,6 +2,11 @@ from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import JSONResponse
 import shutil
 import os
+import uuid
+import json
+from datetime import datetime
+from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from backend.utils.face_utils import train_faces, recognize_face
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -17,6 +22,16 @@ app.add_middleware(
     allow_headers=["*"],  
 )
 base_dir = "C:/project fourth year/known people"
+# Set up static file serving for the snapshots directory
+Snapshot_dir ="snapshots"
+os.makedirs(Snapshot_dir,exist_ok=True)
+app.mount("/snapshots", StaticFiles(directory=Snapshot_dir), name="snapshots")
+#activity log file
+Log_file ="activity_log.json"
+if not os.path.exists(Log_file):
+    with open(Log_file, "w") as f:
+        json.dump([],f)  # Initialize with an empty JSON array
+
 
 TEMP_IMAGE_PATH = os.path.join(os.path.dirname(__file__), "temp_image.jpg")
 
@@ -77,28 +92,45 @@ async def recognize_uploaded_face(file: UploadFile = File(...)):
         # Pass the threshold parameter to recognize_face
         name, confidence = recognize_face(TEMP_IMAGE_PATH, confidence_threshold=0.875)
         
+        #snapshot of the recognized face
+        snapshot_name =f"{uuid.uuid4().hex}.jpg"
+        snapshot_path =os.path.join(Snapshot_dir, snapshot_name)
+        shutil.copyfile(TEMP_IMAGE_PATH, snapshot_path)
+        
+        # Log the activity
+        entry ={
+            "id":uuid.uuid4().hex,
+            "name":name if name else "Unknown",
+            "confidence":confidence,
+            "timestamp":datetime.now().isoformat(),
+            "type":"known" if name and name !="unknown" else "intruder",
+            "image_url":f"/snapshots/{snapshot_name}",
+        }
+        with open(Log_file, "r+") as f:
+            data = json.load(f)
+            data.insert(0, entry)  # Insert at the beginning
+            f.seek(0)
+            data.append(entry)
+            json.dump(data, f, indent=2)
+            f.truncate()  # Clear the file and write the updated data
         # Clean up
         if os.path.exists(TEMP_IMAGE_PATH):
             os.remove(TEMP_IMAGE_PATH)
         
-        if name is None:
-            return JSONResponse(status_code=404, content={"error": "No face detected in the image."})
+        #return the results
         
-        if name == "Unknown":
-            return JSONResponse(
-                status_code=200, 
-                content={
-                    "predicted_name": "Unknown", 
-                    "confidence": confidence,
-                    "message": "This appears to be someone not in the known people database."
-                }
-            )
-
-        return {
-            "predicted_name": name,
-            "confidence": confidence
-        }
+        return JSONResponse(content={
+            "predicted_name":entry["name"],
+            "confidence":entry["confidence"],
+            "image_url":entry["image_url"],
+            "message":entry["type"]=="intruder"
+            and "this appears to be an intruder,check the logs for more details."
+            or None
+        })
     except Exception as e:
-        if os.path.exists(TEMP_IMAGE_PATH):
-            os.remove(TEMP_IMAGE_PATH)
-        return JSONResponse(status_code=500, content={"error": f"An error occurred: {str(e)}"})
+        return JSONResponse(status_code=400, content={"error": str(e)})
+        
+@app.get("/activity")
+def get_activity():
+    with open(Log_file,) as f:
+        return json.load(f)

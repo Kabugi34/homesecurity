@@ -1,0 +1,34 @@
+[
+  {
+    "id": "cc803f975fa44be6b34d025b23510eab",
+    "name": "Tom_Cruise",
+    "confidence": 0.8798826576027896,
+    "timestamp": "2025-04-30T18:36:01.394763",
+    "type": "known",
+    "image_url": "/snapshots/13da8e322b9c40fc83c73e95bd1156ab.jpg"
+  },
+  {
+    "id": "5a975c30b7c4448c8c6fe15a20aaa39a",
+    "name": "Vladimir_Putin",
+    "confidence": 0.9627735428730034,
+    "timestamp": "2025-04-30T18:15:09.513290",
+    "type": "known",
+    "image_url": "/snapshots/9f8f8d546c0047fdb7f3e58304763082.jpg"
+  },
+  {
+    "id": "5a975c30b7c4448c8c6fe15a20aaa39a",
+    "name": "Vladimir_Putin",
+    "confidence": 0.9627735428730034,
+    "timestamp": "2025-04-30T18:15:09.513290",
+    "type": "known",
+    "image_url": "/snapshots/9f8f8d546c0047fdb7f3e58304763082.jpg"
+  },
+  {
+    "id": "cc803f975fa44be6b34d025b23510eab",
+    "name": "Tom_Cruise",
+    "confidence": 0.8798826576027896,
+    "timestamp": "2025-04-30T18:36:01.394763",
+    "type": "known",
+    "image_url": "/snapshots/13da8e322b9c40fc83c73e95bd1156ab.jpg"
+  }
+]
