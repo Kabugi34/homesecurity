@@ -16,6 +16,7 @@ app.add_middleware(
     allow_methods=["*"], 
     allow_headers=["*"],  
 )
+base_dir = "C:/project fourth year/known people"
 
 TEMP_IMAGE_PATH = os.path.join(os.path.dirname(__file__), "temp_image.jpg")
 
@@ -25,6 +26,7 @@ def root():
 
 dataset_path = os.path.join(os.path.dirname(__file__), "known_people")
 
+#endpoint to add a person to the known people dataset
 @app.post("/add_person")
 async def add_person(name: str = Form(...), details: str = Form(None), images: list[UploadFile] = File(...)):
     base_dir ="C:/project fourth year/known people"
@@ -36,6 +38,17 @@ async def add_person(name: str = Form(...), details: str = Form(None), images: l
             shutil.copyfileobj(image.file, buffer)
     return {"message":f"succesfully added {name} with {len(images)} images."}
     
+#endpoint to remove a person from the know people dataset
+@app.post("/remove_person")
+def remove_person(name: str = Form(...)):
+    person_dir =os.path.join(base_dir, name)
+    if not os.path.exists(person_dir):
+        return JSONResponse(status_code=404, content={"error": f"Person {name} not found."})
+    try:
+        shutil.rmtree(person_dir)
+        return {"message": f"Person {name} removed successfully."}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": f"An error occurred: {str(e)}"})
     
 
 @app.post("/train/")
