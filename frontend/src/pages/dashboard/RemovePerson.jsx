@@ -3,19 +3,24 @@ import axios from 'axios';
 
 const RemovePerson =() =>{
   const [personName, setPersonName] = useState('');
-  const [message,setMessage] =useSate('');
+  const [message,setMessage] =useState('');
 
-  const handleRemove =async(e) =>{
-    e.preventDefault();
-    try{
-      const response = await axios.post('http://localhost:8000/remove_person', {name:personName});
-      setMessage(response.data.message);
-      setPersonName('');
-    }catch(error){
-      console.error('Error removing person:', error);
-      setMessage('Failed to remove person, check the name and try again');
+  const handleRemove = async () => {
+    if (!personName) return;
+  
+    try {
+      const formData = new FormData();
+      formData.append("name", personName);
+  
+      const response = await axios.post("http://localhost:8000/remove_person", formData);
+      setMessage(response.data.message || "Person removed successfully!");
+      setPersonName("");
+    } catch (error) {
+      console.error("Error removing person:", error);
+      alert("Failed to remove person");
     }
-    };
+  };
+  
 
     return (
       <div className ="p-6">
@@ -26,6 +31,8 @@ const RemovePerson =() =>{
             placeholder ="enter person's name to remove"
             value={personName}
             onChange={(e) =>setPersonName(e.target.value)}
+            id="person-name"
+            name="person-name"
             className ="border p-2 w-full rounded"
             required
           />

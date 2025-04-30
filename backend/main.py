@@ -40,15 +40,24 @@ async def add_person(name: str = Form(...), details: str = Form(None), images: l
     
 #endpoint to remove a person from the know people dataset
 @app.post("/remove_person")
-def remove_person(name: str = Form(...)):
-    person_dir =os.path.join(base_dir, name)
-    if not os.path.exists(person_dir):
-        return JSONResponse(status_code=404, content={"error": f"Person {name} not found."})
-    try:
-        shutil.rmtree(person_dir)
-        return {"message": f"Person {name} removed successfully."}
-    except Exception as e:
-        return JSONResponse(status_code=500, content={"error": f"An error occurred: {str(e)}"})
+async def remove_person(name: str = Form(...)):
+    name = name.strip().lower()
+    print(f"Received request to remove: '{name}'")
+
+    # Search for folder in known_people directory without case sensitivity
+    folders = os.listdir(base_dir)
+    folder_to_delete = None
+
+    for folder in folders:
+        if folder.lower() == name:
+            folder_to_delete = os.path.join(base_dir, folder)
+            break
+
+    if folder_to_delete and os.path.isdir(folder_to_delete):
+        shutil.rmtree(folder_to_delete)
+        return {"message": f"Removed '{folder}' and their images."}
+    else:
+        return {"message": f"No folder found for '{name}'."}
     
 
 @app.post("/train/")
