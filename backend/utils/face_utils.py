@@ -85,7 +85,7 @@ def train_faces():
         
     return le.classes_.tolist()
 
-def recognize_face(img_path, confidence_threshold=0.7):
+def recognize_face(img_path, confidence_threshold=0.875):
     embedding = extract_face(img_path)
     if embedding is None:
         return None, 0.0

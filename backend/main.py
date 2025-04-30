@@ -68,14 +68,14 @@ def train_known_faces():
     except Exception as e:
         return JSONResponse(status_code=400, content={"error": str(e)})
 
-@app.post("/recognize/")
+@app.post("/recognize")
 async def recognize_uploaded_face(file: UploadFile = File(...)):
     try:
         with open(TEMP_IMAGE_PATH, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
         # Pass the threshold parameter to recognize_face
-        name, confidence = recognize_face(TEMP_IMAGE_PATH, confidence_threshold=0.9)
+        name, confidence = recognize_face(TEMP_IMAGE_PATH, confidence_threshold=0.875)
         
         # Clean up
         if os.path.exists(TEMP_IMAGE_PATH):
