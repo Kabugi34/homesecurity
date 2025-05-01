@@ -98,3 +98,5 @@ Windows
 
 Thumbs.db
 .env
+#snapshot files
+snapshots/*.jpg

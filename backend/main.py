@@ -5,7 +5,7 @@ import os,smtplib
 from email.message import EmailMessage
 import uuid
 import json
-from datetime import datetime
+from datetime import datetime ,timezone
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from backend.utils.face_utils import train_faces, recognize_face
@@ -19,7 +19,7 @@ app = FastAPI()
 # This is important for local development when the frontend and backend are on different ports.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"], #allow request from frontend
+    allow_origins=["*"], #allow request from frontend
     allow_credentials=True,
     allow_methods=["*"], 
     allow_headers=["*"],  
@@ -108,7 +108,7 @@ async def recognize_uploaded_face(file: UploadFile = File(...)):
         "id": uuid.uuid4().hex,
         "name": clean_name,
         "confidence": confidence,
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "type": "Intruder" if is_intruder else "Known",
         "image_url": f"/snapshots/{snapshot_name}"
         }
@@ -229,7 +229,7 @@ async def recognize_live_face(file: UploadFile = File(...)):
         "id": uuid.uuid4().hex,
         "name": name or "Unknown",
         "confidence": round(confidence * 100, 2),
-        "timestamp": datetime.now(datetime.timezone.utc).isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "type": "Known" if name and name != "Unknown" else "Intruder",
         "image_url": f"/snapshots/{snapshot_name}"
     }
