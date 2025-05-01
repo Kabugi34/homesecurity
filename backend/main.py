@@ -1,7 +1,8 @@
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import JSONResponse
 import shutil
-import os
+import os,smtplib
+from email.message import EmailMessage
 import uuid
 import json
 from datetime import datetime
@@ -9,6 +10,8 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from backend.utils.face_utils import train_faces, recognize_face
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
+load_dotenv()
 
 app = FastAPI()
 
@@ -134,3 +137,102 @@ async def recognize_uploaded_face(file: UploadFile = File(...)):
 def get_activity():
     with open(Log_file,) as f:
         return json.load(f)
+    
+CONFIG_PATH ="config.json "
+    
+def get_alert_email():
+    if not os.path.exists(CONFIG_PATH):
+        return None
+    with open(CONFIG_PATH, "r") as f:
+        config = json.load(f)
+    return config.get("alert_email")  
+ 
+def set_alert_email(new_email: str):
+    config = {}
+    if os.path.exists(CONFIG_PATH):
+        with open(CONFIG_PATH, "r") as f:
+            config = json.load(f)
+    config["alert_email"] = new_email
+    with open(CONFIG_PATH, "w") as f:
+        json.dump(config, f, indent=2)
+    
+    
+def send_intruder_email(snapshot_path:str):
+    recipient = get_alert_email()
+    if not recipient:
+        print("No alert email set. Skipping email notification.")
+        return
+
+    msg = EmailMessage()
+    msg["Subject"] = " Intruder Detected!"
+    msg["From"] = os.getenv("SMTP_USER")
+    msg["To"] = recipient
+    msg.set_content("An intruder was detected. See attached snapshot.")
+
+    with open(snapshot_path, "rb") as img:
+        data = img.read()
+        msg.add_attachment(data, maintype="image", subtype="jpeg", filename=os.path.basename(snapshot_path))
+
+    try:
+        s = smtplib.SMTP(os.getenv("SMTP_HOST"), int(os.getenv("SMTP_PORT")))
+        s.starttls()
+        s.login(os.getenv("SMTP_USER"), os.getenv("SMTP_PASS"))
+        s.send_message(msg)
+        s.quit()
+        print(f"Intruder alert sent to {recipient}")
+    except Exception as e:
+        print(f"Failed to send email: {e}")
+    
+@app.post("/recognize_live")
+async def recognize_live_face(file: UploadFile = File(...)):
+    # 1) Save temp
+    temp_path = "temp.jpg"
+    with open(temp_path, "wb") as buf:
+        shutil.copyfileobj(file.file, buf)
+
+    # 2) Recognize
+    name, confidence = recognize_face(temp_path, confidence_threshold=0.875)
+
+    # 3) Save snapshot
+    snapshot_name = f"{uuid.uuid4().hex}.jpg"
+    snapshot_path = os.path.join(Snapshot_dir, snapshot_name)
+    shutil.copyfile(temp_path, snapshot_path)
+
+    # 4) Log & possibly email
+    entry = {
+        "id": uuid.uuid4().hex,
+        "name": name or "Unknown",
+        "confidence": round(confidence * 100, 2),
+        "timestamp": datetime.now(datetime.timezone.utc).isoformat(),
+        "type": "Known" if name and name != "Unknown" else "Intruder",
+        "image_url": f"/snapshots/{snapshot_name}"
+    }
+    # prepend to log
+    with open(Log_file, "r+") as f:
+        data = json.load(f)
+        data.insert(0, entry)
+        f.seek(0); json.dump(data, f, indent=2); f.truncate()
+
+    # 5) If intruder, send email
+    if entry["type"] == "Intruder":
+        try:
+            send_intruder_email(snapshot_path)
+        except Exception as e:
+            print("Email send failed:", e)
+
+    os.remove(temp_path)
+    return JSONResponse(content={
+        "predicted_name": entry["name"],
+        "confidence": entry["confidence"],
+        "type": entry["type"]
+    })
+    
+@app.get("notifications/email")
+def fetch_alert_email():
+    email = get_alert_email()
+    return {"alert_email": email or "No alert email set."}
+@app.post("/notifications/email")
+def update_alert_email(email: str = Form(...)):
+    set_alert_email(email)
+    return {"message": f"Alert email updated to {email}"}
+

@@ -25,7 +25,7 @@ const RemovePerson =() =>{
     return (
       <div className ="p-6">
         <h2 className="text-2xl font-bold mb-4">Remove  known Person</h2>
-        <form onSubmit ={handleRemove} className ="space-y-4">
+        <form onSubmit ={handleRemove} className ="flex flex-col gap-4  w-full max-w-md">
           <input 
             type ="text"
             placeholder ="enter person's name to remove"
