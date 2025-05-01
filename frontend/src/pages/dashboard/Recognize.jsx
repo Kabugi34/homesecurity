@@ -48,7 +48,7 @@ const RecognizeFromUpload = () => {
   return (
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-4">Recognize from File Upload</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4  w-full max-w-md">
         <input
           type="file"
           accept="image/*"

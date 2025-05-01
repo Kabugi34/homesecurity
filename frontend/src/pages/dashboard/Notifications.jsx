@@ -3,38 +3,45 @@ import axios from 'axios';
 
 const Notifications =() => {
   const [email,setEmail] = useState('');
-  const[storedEmail,setStoredEmail] = useState('');
+  const[storedEmail] = useState('');
   const[intruders,setIntruders] = useState([]);
   const[status,setStatus] = useState('');
 
+  // Notifications.jsx
   useEffect(() => {
-    // Load alert email and intruder logs
-    axios.get("http://localhost:8000/notifications/email")
-      .then(res => {
-        setStoredEmail(res.data.email);
-        setEmail(res.data.email);
-      })
-      .catch(() => {});
-    
     axios.get("http://localhost:8000/notifications/intruders")
-      .then(res => setIntruders(res.data))
-      .catch(() => {});
+      .then(res => {
+        let list = res.data;
+        // if wrapped in an object, pull out the array:
+        if (!Array.isArray(list) && Array.isArray(list.intruders)) {
+          list = list.intruders;
+        }
+        if (!Array.isArray(list)) {
+          console.error("Expected an array, got:", list);
+          list = [];
+        }
+        setIntruders(list);
+      })
+      .catch(err => console.error(err));
   }, []);
+  
 
-  const updateEmail =async(e) =>{
+  const updateEmail = async (e) => {
     e.preventDefault();
+  
     try {
-      await axios.post("http://localhost:8000/notifications/email",
-        new URLSearchParams({email})
+      await axios.post(
+        "http://localhost:8000/notifications/email",
+        new URLSearchParams({ email }),        // form-urlencoded body
+        { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
       );
-      setStoredEmail(email);
-      setStatus('Email updated successfully!');
-    }catch {
-      setStatus('Error updating email!');
+      setStatus("Email updated!");
+    } catch (err) {
+      console.error("Update failed:", err.response || err);
+      setStatus("Failed to update email.");
     }
-
-
   };
+  
   return (
     <div className ="p-6">
       <h2 className="text-2xl font-bold mb-4">Notifications </h2>

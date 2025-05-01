@@ -227,7 +227,7 @@ async def recognize_live_face(file: UploadFile = File(...)):
         "type": entry["type"]
     })
     
-@app.get("notifications/email")
+@app.get("/notifications/email")
 def fetch_alert_email():
     email = get_alert_email()
     return {"alert_email": email or "No alert email set."}
@@ -235,4 +235,8 @@ def fetch_alert_email():
 def update_alert_email(email: str = Form(...)):
     set_alert_email(email)
     return {"message": f"Alert email updated to {email}"}
-
+@app.get("/notifications/intruders")
+def get_intruder_logs():
+    with open(Log_file) as f:
+        data = json.load(f)
+    return [e for e in data if e["type"] == "Intruder"]
