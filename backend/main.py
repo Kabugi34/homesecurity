@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, Form
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.responses import JSONResponse
 import shutil
 import os,smtplib
@@ -101,14 +101,18 @@ async def recognize_uploaded_face(file: UploadFile = File(...)):
         shutil.copyfile(TEMP_IMAGE_PATH, snapshot_path)
         
         # Log the activity
-        entry ={
-            "id":uuid.uuid4().hex,
-            "name":name if name else "Unknown",
-            "confidence":confidence,
-            "timestamp":datetime.now().isoformat(),
-            "type":"known" if name and name !="unknown" else "intruder",
-            "image_url":f"/snapshots/{snapshot_name}",
+        clean_name = name or "Unknown"
+        is_intruder = clean_name.lower() == "unknown"
+
+        entry = {
+        "id": uuid.uuid4().hex,
+        "name": clean_name,
+        "confidence": confidence,
+        "timestamp": datetime.now().isoformat(),
+        "type": "Intruder" if is_intruder else "Known",
+        "image_url": f"/snapshots/{snapshot_name}"
         }
+
         with open(Log_file, "r+") as f:
             data = json.load(f)
             data.insert(0, entry)  # Insert at the beginning
@@ -137,6 +141,28 @@ async def recognize_uploaded_face(file: UploadFile = File(...)):
 def get_activity():
     with open(Log_file,) as f:
         return json.load(f)
+    
+@app.delete("/activity/{entry_id}")
+def delete_activity_entry(entry_id: str):
+    # Load log
+    try:
+        with open(Log_file, "r") as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Log file not found")
+
+    # Filter out the one entry
+    new_data = [e for e in data if e["id"] != entry_id]
+
+    # If nothing changed, maybe wrong ID
+    if len(new_data) == len(data):
+        raise HTTPException(404, f"No entry with id {entry_id}")
+
+    # Save back
+    with open(Log_file, "w") as f:
+        json.dump(new_data, f, indent=2)
+
+    return {"message": "Entry deleted successfully."}
     
 CONFIG_PATH ="config.json "
     

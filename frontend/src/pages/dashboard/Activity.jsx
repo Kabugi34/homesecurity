@@ -22,6 +22,15 @@ const Activity = () => {
   // 2) Apply filter
   // after deduplication
 const normalizedFilter = filter.trim().toLowerCase();
+const handleDelete = async (id) => {
+  try {
+    await axios.delete(`http://localhost:8000/activity/${id}`);
+    // Remove from state
+    setLogs((prev) => prev.filter((e) => e.id !== id));
+  } catch (err) {
+    console.error("Delete failed", err);
+  }
+};
 
 const filteredLogs = uniqueLogs.filter((entry) => {
   if (normalizedFilter === "all") return true;
@@ -53,7 +62,13 @@ const filteredLogs = uniqueLogs.filter((entry) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredLogs.map((entry) => (
-          <div key={entry.id} className="bg-white shadow rounded p-4">
+          <div key={entry.id} className="bg-white shadow rounded p-4 relative">
+            <button
+            onClick={() => handleDelete(entry.id)}
+            className="absolute top-2 right-2 text-red-600 hover:text-red-800"
+          >
+            ✕
+          </button>
             {entry.image_url ? (
               <img
                 src={`http://localhost:8000${entry.image_url}`}
