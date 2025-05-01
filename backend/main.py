@@ -5,6 +5,9 @@ import os,smtplib
 from email.message import EmailMessage
 import uuid
 import json
+from email.mime.image import MIMEImage
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from datetime import datetime ,timezone
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
