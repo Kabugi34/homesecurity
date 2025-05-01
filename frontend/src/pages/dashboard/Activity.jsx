@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { X } from "lucide-react";
 
 const Activity = () => {
   const [logs, setLogs] = useState([]);
@@ -65,9 +66,10 @@ const filteredLogs = uniqueLogs.filter((entry) => {
           <div key={entry.id} className="bg-white shadow rounded p-4 relative">
             <button
             onClick={() => handleDelete(entry.id)}
-            className="absolute top-2 right-2 text-red-600 hover:text-red-800"
+            className="absolute top-2 right-2 bg-red-100 hover:bg-red-200 text-red-600 hover:text-red-800 p-1 rounded-full transition"
+            aria-label="Delete entry"
           >
-            ✕
+             <X className="h-5 w-5" />
           </button>
             {entry.image_url ? (
               <img
