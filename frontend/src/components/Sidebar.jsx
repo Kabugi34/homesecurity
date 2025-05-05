@@ -11,6 +11,7 @@ const Sidebar = () => {
         <Link to="/dashboard/removeperson" className="hover:text-blue-300 transition-colors duration-200">Remove Person</Link>
         <Link to="/dashboard/notifications" className="hover:text-blue-300 transition-colors duration-200">Notifications</Link>
         <Link to="/dashboard/Recognize" className="hover:text-blue-300 transition-colors duration-200"> Manual Recognition </Link>
+        <Link to="/dashboard/RetrainModel" className="hover:text-blue-300 transition-colors duration-200"> Retrain Model</Link>
         
       </nav>
     </div>
