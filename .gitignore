@@ -19,7 +19,7 @@ ENV/
 .vscode/
 *.swp
 
-# 💻 Virtual environment
+# Virtual environment
 .venv/
 venv/
 env/
@@ -27,7 +27,7 @@ ENV/
 benv/
 
 
-# 🚀 Node / React
+#  Node / React
 node_modules/
 build/
 dist/
