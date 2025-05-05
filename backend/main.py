@@ -14,7 +14,7 @@ from fastapi.staticfiles import StaticFiles
 from backend.utils.face_utils import train_faces, recognize_face
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv(dotenv_path="c:/project fourth year/frontend/.env")
 
 app = FastAPI()
 
@@ -30,7 +30,7 @@ app.add_middleware(
 SMTP_USER = os.getenv("SMTP_USER")
 SMTP_PASS = os.getenv("SMTP_PASS")
 SMTP_HOST = os.getenv("SMTP_HOST")
-SMTP_PORT = int(os.getenv("SMTP_PORT",587))
+SMTP_PORT = int(os.getenv("SMTP_PORT"))
 base_dir = "C:/project fourth year/known people"
 # Set up static file serving for the snapshots directory
 Snapshot_dir ="snapshots"
@@ -39,9 +39,13 @@ os.makedirs(Snapshot_dir,exist_ok=True)
 app.mount("/snapshots", StaticFiles(directory=Snapshot_dir), name="snapshots")
 #activity log file
 Log_file ="activity_log.json"
-if not os.path.exists(Log_file):
-    with open(Log_file, "w") as f:
-        json.dump([],f)  # Initialize with an empty JSON array
+for path, init in [
+    (Log_file,      []),
+    (CONFIG_PATH, {"alert_email": ""}),
+]:
+    if not os.path.exists(path):
+        with open(path, "w") as f:
+            json.dump(init, f)
 
 
 TEMP_IMAGE_PATH = os.path.join(os.path.dirname(__file__), "temp_image.jpg")
@@ -174,47 +178,17 @@ def delete_activity_entry(entry_id: str):
     
 CONFIG_PATH ="config.json "
     
-def get_alert_email():
-   with open(CONFIG_PATH) as f:
-        return json.load(f).get("alert_email", "") 
+def get_alert_email() -> str:
+    with open(CONFIG_PATH, "r") as f:
+        return json.load(f).get("alert_email", "").strip()
  
-def set_alert_email(new_email: str):
-    config = {}
-    if os.path.exists(CONFIG_PATH):
-        with open(CONFIG_PATH, "r") as f:
-            config = json.load(f)
-    config["alert_email"] = new_email
+def set_alert_email(address: str):
+    cfg = {}
+    with open(CONFIG_PATH, "r") as f:
+        cfg = json.load(f)
+    cfg["alert_email"] = address
     with open(CONFIG_PATH, "w") as f:
-        json.dump(config, f, indent=2)
-    
-    
-def send_intruder_email(snapshot_path: str):
-    recipient = get_alert_email()
-    try:
-        msg = MIMEMultipart()
-        msg["Subject"] = "Intruder Detected!"
-        msg["From"] = SMTP_USER
-        msg["To"] = recipient
-
-        msg.attach(MIMEText("An intruder has been detected. See the attached snapshot."))
-
-        # Attach the snapshot image
-        with open(snapshot_path, "rb") as f:
-            img_data = f.read()
-            image = MIMEImage(img_data)
-            image.add_header("Content-Disposition", "attachment", filename=os.path.basename(snapshot_path))
-            msg.attach(image)
-
-        # Send the email
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
-            server.starttls()
-            server.login(SMTP_USER, SMTP_PASS)
-            server.send_message(msg)
-
-        print(f"Email sent successfully to {recipient}")
-
-    except Exception as e:
-        print(f"Failed to send email: {e}")
+        json.dump(cfg, f, indent=2)
     
     
 @app.post("/recognize_live")
@@ -254,6 +228,7 @@ async def recognize_live_face(file: UploadFile = File(...)):
         except Exception as e:
             print("Email send failed:", e)
 
+
     os.remove(temp_path)
     return JSONResponse(content={
         "predicted_name": entry["name"],
@@ -261,35 +236,78 @@ async def recognize_live_face(file: UploadFile = File(...)):
         "type": entry["type"]
     })
     
-def send_confirmation_email(to_email:str):
-    if not to_email:
-        return
+
+def send_confirmation_email(to_email: str):
     try:
-        msg=MIMEMultipart()
-        msg["Subject"] = "Face Recognition System - Confirmation"
+        print(f"SMTP_USER: {SMTP_USER}, SMTP_HOST: {SMTP_HOST}, SMTP_PORT: {SMTP_PORT}")
+        msg = MIMEMultipart()
+        msg["Subject"] = "Alert Email Confirmation"
         msg["From"] = SMTP_USER
         msg["To"] = to_email
-        body = MIMEText("Your email has been successfully registered for notifications.")
-        msg.attach(MIMEText(body))
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+
+        body = MIMEText("You have been set to receive intruder alerts.", "plain")
+        msg.attach(body)
+
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as server:
+            server.set_debuglevel(1)  # Enable debug output
+            server.ehlo()
             server.starttls()
+            server.ehlo()
             server.login(SMTP_USER, SMTP_PASS)
             server.send_message(msg)
+
         print(f"Confirmation email sent to {to_email}")
     except Exception as e:
-        print(f"Failed to send confirmation email: {e}")
+        print(f"Error: {e}")
+
+    
+def send_intruder_email(snapshot_path: str):
+    recipient = get_alert_email()
+    if not recipient:
+        print("No alert email configured. Skipping intruder alert email.")
+        return
+
+    try:
+        msg = MIMEMultipart()
+        msg["Subject"] = "Intruder Detected!"
+        msg["From"] = SMTP_USER
+        msg["To"] = recipient
+
+        msg.attach(MIMEText("An intruder has been detected. See the attached snapshot."))
+
+        with open(snapshot_path, "rb") as f:
+            img_data = f.read()
+            image = MIMEImage(img_data)
+            image.add_header("Content-Disposition", "attachment", filename=os.path.basename(snapshot_path))
+            msg.attach(image)
+
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as server:
+            server.ehlo()
+            server.starttls()
+            server.ehlo()
+            server.login(SMTP_USER, SMTP_PASS)
+            server.send_message(msg)
+
+        print(f"Intruder alert email sent to {recipient}.")
+
+    except smtplib.SMTPException as e:
+        print(f"SMTP error occurred while sending intruder email: {e}")
+    except Exception as e:
+        print(f"Unexpected error while sending intruder email: {e}")
+
     
 @app.get("/notifications/email")
 def fetch_alert_email():
-    email = get_alert_email()
-    return {"alert_email": email or "No alert email set."}
+    return {"email": get_alert_email()}
+
 @app.post("/notifications/email")
 def update_alert_email(email: str = Form(...)):
     set_alert_email(email)
     send_confirmation_email(email)
-    return {"message": f"Alert email updated to {email}"}
+    return {"message": f"Alert email updated and confirmation sent to {email}"}
+
 @app.get("/notifications/intruders")
 def get_intruder_logs():
-    with open(Log_file) as f:
+    with open(Log_file, "r") as f:
         data = json.load(f)
-    return [e for e in data if e["type"] == "Intruder"]
+    return [e for e in data if e.get("type") == "Intruder"]

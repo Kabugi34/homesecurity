@@ -1,29 +1,5 @@
 [
   {
-    "id": "7ddeb1610d114c30a7c604893dac8c9f",
-    "name": "Unknown",
-    "confidence": 0.0,
-    "timestamp": "2025-05-01T19:11:57.652290+00:00",
-    "type": "Intruder",
-    "image_url": "/snapshots/95c7f4aed84b4169877dc0c924748f43.jpg"
-  },
-  {
-    "id": "07fe83ea7bba4f63a2bee3f90e2b078f",
-    "name": "Vladimir_Putin",
-    "confidence": 91.81,
-    "timestamp": "2025-05-01T18:00:09.257986+00:00",
-    "type": "Known",
-    "image_url": "/snapshots/c100293a13e14313a08ce451d575bcdb.jpg"
-  },
-  {
-    "id": "5c7821ba4949493d93806dce617202df",
-    "name": "Vladimir_Putin",
-    "confidence": 90.76,
-    "timestamp": "2025-05-01T18:00:07.024153+00:00",
-    "type": "Known",
-    "image_url": "/snapshots/b551159ed8c24059be7b2ff8aa863a4f.jpg"
-  },
-  {
     "id": "fce66a609795405ba7264787e8dab694",
     "name": "Vladimir_Putin",
     "confidence": 90.52,
