@@ -97,7 +97,7 @@ const Notifications = () => {
                   className="w-full h-40 object-cover rounded mb-2"
                 />
                 <p><strong>Time:</strong> {new Date(entry.timestamp).toLocaleString()}</p>
-                <p><strong>Confidence:</strong> {entry.confidence}%</p>
+                <p><strong>Confidence:</strong> {entry.confidence*100}%</p>
               </div>
             ))}
           </div>

@@ -87,7 +87,7 @@ const filteredLogs = uniqueLogs.filter((entry) => {
               <strong>Name:</strong> {entry.name}
             </p>
             <p>
-              <strong>Confidence:</strong> {entry.confidence}%
+              <strong>Confidence:</strong> {entry.confidence}
             </p>
             <p>
               <strong>Time:</strong>{" "}

@@ -8,7 +8,7 @@ export function useTrainModel() {
 
     const train=async () =>{
         setStatus("training");
-        setProgress(o);
+        setProgress(0);
 
         //simulation of training process before server response
         timerRef.current = setInterval(() => {
@@ -17,7 +17,7 @@ export function useTrainModel() {
     },300);
 
     try {
-        await axios.post("http:localhost:800/train/");
+        await axios.post("http://localhost:8000/train/");
         clearInterval(timerRef.current);
         setProgress(100);
         setStatus("success");

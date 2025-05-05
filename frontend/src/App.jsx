@@ -10,6 +10,7 @@ import RemovePerson from './pages/dashboard/RemovePerson';
 import Notifications from './pages/dashboard/Notifications';
 import Recognize from './pages/dashboard/Recognize';
 import RetrainModel from "./pages/dashboard/RetrainModel";
+import Reports from "./pages/dashboard/Reports";
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
           <Route path="notifications" element={<Notifications />} />
           <Route path="recognize" element={<Recognize />} />
           <Route path="RetrainModel" element={<RetrainModel/>} />
+          <Route path="Reports" element={<Reports />} />
         </Route>
 
       </Routes>

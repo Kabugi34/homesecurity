@@ -13,8 +13,10 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from backend.utils.face_utils import train_faces, recognize_face
 from fastapi.middleware.cors import CORSMiddleware
-from Routes.Reports import router as reports_router
+from backend.routes.reports import router as reports_router
 from dotenv import load_dotenv
+import sys
+sys.path.append("c:/project fourth year")
 load_dotenv(dotenv_path="c:/project fourth year/frontend/.env")
 
 app = FastAPI()
@@ -108,7 +110,7 @@ async def recognize_uploaded_face(file: UploadFile = File(...)):
             shutil.copyfileobj(file.file, buffer)
 
         # Pass the threshold parameter to recognize_face
-        name, confidence = recognize_face(TEMP_IMAGE_PATH, confidence_threshold=0.875)
+        name, confidence = recognize_face(TEMP_IMAGE_PATH, confidence_threshold=0.85)
         
         #snapshot of the recognized face
         snapshot_name =f"{uuid.uuid4().hex}.jpg"
@@ -202,7 +204,7 @@ async def recognize_live_face(file: UploadFile = File(...)):
         shutil.copyfileobj(file.file, buf)
 
     # 2) Recognize
-    name, confidence = recognize_face(temp_path, confidence_threshold=0.875)
+    name, confidence = recognize_face(temp_path, confidence_threshold=0.85)
 
     # 3) Save snapshot
     snapshot_name = f"{uuid.uuid4().hex}.jpg"
