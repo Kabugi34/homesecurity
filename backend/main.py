@@ -13,10 +13,13 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from backend.utils.face_utils import train_faces, recognize_face
 from fastapi.middleware.cors import CORSMiddleware
+from Routes.Reports import router as reports_router
 from dotenv import load_dotenv
 load_dotenv(dotenv_path="c:/project fourth year/frontend/.env")
 
 app = FastAPI()
+app.include_router(reports_router)
+
 
 #configuring CORS middleware to allow requests from the frontend
 # This is important for local development when the frontend and backend are on different ports.

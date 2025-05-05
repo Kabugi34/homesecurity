@@ -19,7 +19,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         
-        {/* Dashboard and nested pages */}
+        {/* Dashboard and nested  inner pages */}
         <Route path="/dashboard" element={<Dashboard />}>
           <Route index element={<Activity />} />
           <Route path="activity" element={<Activity />} />
