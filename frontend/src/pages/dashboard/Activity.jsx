@@ -49,8 +49,9 @@ const filteredLogs = uniqueLogs.filter((entry) => {
       <h1 className="text-3xl font-bold mb-4">Activity Log</h1>
 
       <div className="flex items-center mb-4 space-x-4">
-        <label>Filter:</label>
+        <label htmlFor="filter-select">Filter:</label>
         <select
+          id="filter-select"
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
           className="border p-2 rounded"
