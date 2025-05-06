@@ -1,7 +1,7 @@
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.responses import JSONResponse
 import shutil
-import os,smtplib
+import os,smtplib,cv2
 from email.message import EmailMessage
 import uuid
 import json
@@ -15,6 +15,8 @@ from backend.utils.face_utils import train_faces, recognize_face
 from fastapi.middleware.cors import CORSMiddleware
 from backend.routes.reports import router as reports_router
 from dotenv import load_dotenv
+from backend.utils.face_utils import face_cascade
+
 import sys
 sys.path.append("c:/project fourth year")
 load_dotenv(dotenv_path="c:/project fourth year/frontend/.env")
@@ -198,20 +200,42 @@ def set_alert_email(address: str):
     
 @app.post("/recognize_live")
 async def recognize_live_face(file: UploadFile = File(...)):
-    # 1) Save temp
     temp_path = "temp.jpg"
+    
+    # 1) Save uploaded image temporarily
     with open(temp_path, "wb") as buf:
         shutil.copyfileobj(file.file, buf)
 
-    # 2) Recognize
+    # 2) Draw bounding boxes on temp image
+    img = cv2.imread(temp_path)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    # Load Haar Cascade from correct path
+    cascade_path = os.path.join(os.getcwd(), "haarcascade_frontalface_default.xml")
+    face_cascade = cv2.CascadeClassifier(cascade_path)
+
+    faces = face_cascade.detectMultiScale(
+        gray,
+        scaleFactor=1.1,
+        minNeighbors=5,
+        minSize=(30, 30)
+    )
+
+    for (x, y, w, h) in faces:
+        cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+    # Overwrite temp image with bounding boxes
+    cv2.imwrite(temp_path, img)
+
+    # 3) Perform face recognition
     name, confidence = recognize_face(temp_path, confidence_threshold=0.85)
 
-    # 3) Save snapshot
+    # 4) Save snapshot
     snapshot_name = f"{uuid.uuid4().hex}.jpg"
     snapshot_path = os.path.join(Snapshot_dir, snapshot_name)
     shutil.copyfile(temp_path, snapshot_path)
 
-    # 4) Log & possibly email
+    # 5) Log the detection
     entry = {
         "id": uuid.uuid4().hex,
         "name": name or "Unknown",
@@ -220,27 +244,29 @@ async def recognize_live_face(file: UploadFile = File(...)):
         "type": "Known" if name and name != "Unknown" else "Intruder",
         "image_url": f"/snapshots/{snapshot_name}"
     }
-    # prepend to log
+
     with open(Log_file, "r+") as f:
         data = json.load(f)
         data.insert(0, entry)
-        f.seek(0); json.dump(data, f, indent=2); f.truncate()
+        f.seek(0)
+        json.dump(data, f, indent=2)
+        f.truncate()
 
-    # 5) If intruder, send email
+    # 6) Send email if intruder
     if entry["type"] == "Intruder":
         try:
             send_intruder_email(snapshot_path)
         except Exception as e:
             print("Email send failed:", e)
 
-
     os.remove(temp_path)
+
     return JSONResponse(content={
         "predicted_name": entry["name"],
         "confidence": entry["confidence"],
         "type": entry["type"]
     })
-    
+
 
 def send_confirmation_email(to_email: str):
     try:
